@@ -12,12 +12,13 @@ export const monitorSchema = z.object({
   check_interval_seconds: z
     .number()
     .int()
-    .min(30, { message: "Interval must be at least 30 seconds" })
+    .min(300, { message: "Minimum monitoring interval is 5 minutes (300 seconds)" })
     .default(300),
   timeout_seconds: z
     .number()
     .int()
-    .gt(0, { message: "Timeout must be greater than 0" })
+    .gt(0)
+    .max(60, { message: "Timeout cannot exceed 60 seconds" })
     .default(30),
 
   http_status: z.number().int().nullable().optional(),

@@ -109,17 +109,3 @@ CREATE TRIGGER trg_monitors_updated_at
     BEFORE UPDATE ON monitors
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
--- =========================================================
--- OPTIONAL, FOR SCALE (not required to start)
--- =========================================================
--- 1. monitor_logs will grow fastest (one row per check, per monitor).
---    Consider partitioning by month once you have real volume:
---      CREATE TABLE monitor_logs (...) PARTITION BY RANGE (checked_at);
---
--- 2. Add a retention policy / cron job to delete old monitor_logs
---    (e.g. keep 90 days of raw logs, aggregate the rest).
---
--- 3. If users will want multiple notification channels (email + Slack
---    for the same monitor) with saved config (webhook URL, phone number),
---    consider a separate `notification_channels` table instead of just
---    a `type` enum on `notifications`.

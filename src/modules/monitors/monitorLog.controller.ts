@@ -4,7 +4,7 @@ import { addMonitorValue } from "./monitorlog.service";
 
 export const addMonitor = async (req: Request, res: Response) => {
   try {
-    // 1. Validate incoming request body against schema
+
     const parsedData = createMonitorSchema.safeParse(req.body);
     console.log(parsedData);
     if (!parsedData.success) {

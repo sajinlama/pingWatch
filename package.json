@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "worker": "tsx src/jobs/jobs.monitor.ts"
   },
   "keywords": [],
   "author": "",
@@ -23,11 +24,14 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
+    "axios": "^1.18.1",
     "bcrypt": "^6.0.0",
+    "bullmq": "^5.81.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "ioredis": "^5.11.1",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.22.0",
     "zod": "^4.4.3"
