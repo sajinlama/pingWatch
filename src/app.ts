@@ -17,7 +17,7 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:3000",
-    credentials: true, // Allows sending cookies from frontend
+    credentials: true, 
   })
 );
 
@@ -35,7 +35,7 @@ app.use((_req: Request, res: Response) => {
     success: false,
     message: "Route not found",
   });
-});
+}); 
 
 // ── Centralized Error Handler Middleware ─────────────────
 // Catches errors thrown by AppError or express-async-handler
