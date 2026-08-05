@@ -25,14 +25,12 @@ CREATE TABLE users (
     updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- =========================================================
--- MONITORS  (one user -> many monitors)
--- =========================================================
+
 CREATE TABLE monitors (
     id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id                  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 
-    name                     TEXT,                     -- friendly label, e.g. "Prod API"
+    name                     TEXT,                    
     url                      TEXT NOT NULL,
 
     status                   monitor_status NOT NULL DEFAULT 'UNKNOWN',
