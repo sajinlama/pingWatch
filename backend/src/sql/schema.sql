@@ -11,26 +11,49 @@ CREATE EXTENSION IF NOT EXISTS "citext";    -- for case-insensitive email
 -- ENUM TYPES
 -- =========================================================
 CREATE TYPE monitor_status AS ENUM ('UP', 'DOWN', 'UNKNOWN', 'PAUSED');
-CREATE TYPE notification_type AS ENUM ('EMAIL', 'SMS', 'WEBHOOK', 'SLACK');
+CREATE TYPE notification_type AS ENUM ('EMAIL', 'SMS', 'WEBHOOK', 'SLACK', 'TELEGRAM');
 
 -- =========================================================
 -- USERS
 -- =========================================================
 CREATE TABLE users (
-    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name           TEXT NOT NULL,
-    email          CITEXT UNIQUE NOT NULL,
-    password_hash  TEXT NOT NULL,
-    created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name               TEXT NOT NULL,
+    email              CITEXT UNIQUE NOT NULL,
+    password_hash      TEXT NOT NULL,
+
+    telegram_chat_id   BIGINT UNIQUE,   -- set once user links their Telegram account
+
+    created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- =========================================================
+-- TELEGRAM LINK CODES
+-- Short-lived, single-use codes used to link a Telegram chat
+-- to a user account via /start <code> in the bot
+-- =========================================================
+CREATE TABLE telegram_link_codes (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 
+    code        TEXT NOT NULL UNIQUE,
+    expires_at  TIMESTAMPTZ NOT NULL,
+    used_at     TIMESTAMPTZ,
+
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_telegram_link_codes_code ON telegram_link_codes(code);
+
+-- =========================================================
+-- MONITORS
+-- =========================================================
 CREATE TABLE monitors (
     id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id                  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 
-    name                     TEXT,                    
+    name                     TEXT,
     url                      TEXT NOT NULL,
 
     status                   monitor_status NOT NULL DEFAULT 'UNKNOWN',
@@ -72,9 +95,7 @@ CREATE TABLE monitor_logs (
 CREATE INDEX idx_monitor_logs_monitor_checked
     ON monitor_logs(monitor_id, checked_at DESC);
 
--- =========================================================
--- NOTIFICATIONS  (one monitor -> many notifications)
--- =========================================================
+
 CREATE TABLE notifications (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     monitor_id  UUID NOT NULL REFERENCES monitors(id) ON DELETE CASCADE,
@@ -88,9 +109,7 @@ CREATE TABLE notifications (
 CREATE INDEX idx_notifications_monitor_sent
     ON notifications(monitor_id, sent_at DESC);
 
--- =========================================================
--- AUTO-UPDATE updated_at ON CHANGE
--- =========================================================
+
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -106,4 +125,3 @@ CREATE TRIGGER trg_users_updated_at
 CREATE TRIGGER trg_monitors_updated_at
     BEFORE UPDATE ON monitors
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-
