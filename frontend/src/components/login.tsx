@@ -1,93 +1,101 @@
 import React, { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { apiBaseUrl } from '../env';
+import { Link } from 'react-router';
+
+const loginUser = async (credentials: { email: string; password: string }) => {
+  const response = await fetch(`${apiBaseUrl}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(credentials),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to sign in. Please check your credentials.');
+  }
+
+  return response.json();
+};
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const loginMutation = useMutation({
+    mutationFn: loginUser,
+    onSuccess: (data) => {
+      console.log('Login successful:', data);
+    },
+    onError: (error: Error) => {
+      console.error('Login error:', error.message);
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    // Add your auth logic here
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1200);
+    loginMutation.mutate({ email, password });
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] font-sans text-[#111827] flex flex-col justify-center items-center px-4 py-12 antialiased selection:bg-[#4F46E5] selection:text-white">
+    <div className="min-h-screen bg-[#0B0C10] font-sans text-[#D8E0E8] flex flex-col justify-center items-center px-4 py-12 antialiased selection:bg-[#0088CC]/20 selection:text-[#0088CC] relative overflow-hidden">
+      
+      {/* Background Grid Accent & Blue Glow */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1F232D15_1px,transparent_1px),linear-gradient(to_bottom,#1F232D15_1px,transparent_1px)] bg-[size:3rem_3rem] pointer-events-none -z-10" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-b from-[#0088CC]/15 via-[#0088CC]/5 to-transparent blur-[120px] pointer-events-none -z-10 rounded-full" />
+
       {/* Container */}
-      <div className="w-full max-w-[400px]">
+      <div className="w-full max-w-[420px] relative z-10">
         
         {/* Brand Header */}
         <div className="flex flex-col items-center mb-8">
-          <div className="flex items-center justify-center w-11 h-11 bg-[#111827] rounded-lg shadow-sm mb-3">
-            {/* Pulse / Radar Ping Icon */}
-            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
-          <span className="text-[20px] font-semibold tracking-tight text-[#111827]">
-            PingWatch
-          </span>
-          <h1 className="mt-2 text-[24px] font-bold tracking-tight text-[#111827]">
-            Sign in to your account
+          <Link to="/" className="flex items-center gap-3 group mb-4">
+            <div className="relative w-10 h-10 bg-[#181B1F] border border-[#22252B] rounded-lg flex items-center justify-center text-[#0088CC] shadow-[0_0_15px_rgba(0,136,204,0.25)] group-hover:border-[#0088CC]/60 transition-all">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L3 6V12C3 17.52 6.84 22.74 12 24C17.16 22.74 21 17.52 21 12V6L12 2Z" fill="#181B1F" stroke="#0088CC" strokeWidth="2" strokeLinejoin="round"/>
+                <path d="M7 12H10L12 8L14 16L16 12H17" stroke="#00E599" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E599] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00E599]"></span>
+              </span>
+            </div>
+            <span className="font-bold text-xl tracking-wider text-white font-mono leading-none">
+              BISARIC<span className="text-[#0088CC]">WATCH</span>
+            </span>
+          </Link>
+
+          <h1 className="text-2xl font-extrabold tracking-tight text-white font-mono">
+            OPERATOR_LOGIN
           </h1>
-          <p className="mt-1 text-[14px] text-[#6B7280]">
-            Welcome back. Enter your details to continue.
+          <p className="mt-1.5 text-xs font-mono text-slate-400 tracking-wide">
+            AUTHENTICATE TO ACCESS TELEMETRY CONSOLE
           </p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white border border-[#E5E7EB] rounded-xl shadow-sm p-6 sm:p-8">
+        <div className="bg-[#181B1F] border border-[#22252B] rounded-xl shadow-[0_16px_40px_rgba(0,0,0,0.6)] p-6 sm:p-8">
           
-          {/* SSO / OAuth Option */}
-          <button
-            type="button"
-            className="w-full flex items-center justify-center gap-3 h-10 px-4 border border-[#E5E7EB] rounded-lg text-[14px] font-medium text-[#111827] bg-white hover:bg-[#F5F5F5] transition-colors focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:ring-offset-1"
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24">
-              <path
-                fill="#4285F4"
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-              />
-              <path
-                fill="#34A853"
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-              />
-              <path
-                fill="#FBBC05"
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-              />
-              <path
-                fill="#EA4335"
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-              />
-            </svg>
-            Continue with Google
-          </button>
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center" aria-hidden="true">
-              <div className="w-full border-t border-[#E5E7EB]"></div>
+          {/* Error Message Display */}
+          {loginMutation.isError && (
+            <div className="mb-5 p-3 rounded bg-[#F2495C]/10 border border-[#F2495C]/40 text-xs font-mono text-[#F2495C] flex items-center gap-2.5">
+              <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{loginMutation.error.message}</span>
             </div>
-            <div className="relative flex justify-center text-[12px] uppercase">
-              <span className="bg-white px-2 text-[#9CA3AF] font-medium tracking-wider">
-                Or continue with email
-              </span>
-            </div>
-          </div>
+          )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 font-mono">
             
             {/* Email Field */}
             <div>
               <label 
                 htmlFor="email" 
-                className="block text-[14px] font-medium text-[#111827] mb-1.5"
+                className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2"
               >
                 Work Email
               </label>
@@ -97,26 +105,20 @@ export default function Login() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@company.com"
-                className="w-full h-10 px-3 border border-[#E5E7EB] rounded-lg text-[14px] text-[#111827] placeholder-[#9CA3AF] bg-white hover:border-[#9CA3AF] focus:outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] transition-colors"
+                placeholder="operator@domain.com"
+                className="w-full h-10 px-3 border border-[#22252B] rounded-lg text-xs text-white placeholder-slate-600 bg-[#0B0C10] hover:border-[#0088CC]/40 focus:outline-none focus:border-[#0088CC] focus:ring-1 focus:ring-[#0088CC] transition-all"
               />
             </div>
 
             {/* Password Field */}
             <div>
-              <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center justify-between mb-2">
                 <label 
                   htmlFor="password" 
-                  className="block text-[14px] font-medium text-[#111827]"
+                  className="block text-xs font-semibold text-slate-300 uppercase tracking-wider"
                 >
                   Password
                 </label>
-                <a 
-                  href="#forgot-password" 
-                  className="text-[12px] font-medium text-[#4F46E5] hover:underline focus:outline-none focus:underline"
-                >
-                  Forgot password?
-                </a>
               </div>
               <div className="relative">
                 <input
@@ -125,13 +127,13 @@ export default function Login() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full h-10 pl-3 pr-10 border border-[#E5E7EB] rounded-lg text-[14px] text-[#111827] placeholder-[#9CA3AF] bg-white hover:border-[#9CA3AF] focus:outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] transition-colors"
+                  placeholder="••••••••••••"
+                  className="w-full h-10 pl-3 pr-10 border border-[#22252B] rounded-lg text-xs text-white placeholder-slate-600 bg-[#0B0C10] hover:border-[#0088CC]/40 focus:outline-none focus:border-[#0088CC] focus:ring-1 focus:ring-[#0088CC] transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#9CA3AF] hover:text-[#6B7280] focus:outline-none"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300 focus:outline-none transition-colors"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? (
@@ -148,50 +150,39 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Remember Me Toggle */}
-            <div className="flex items-center pt-1">
-              <input
-                id="remember-me"
-                type="checkbox"
-                className="h-4 w-4 rounded border-[#E5E7EB] text-[#4F46E5] focus:ring-[#4F46E5] focus:ring-offset-0 transition-colors"
-              />
-              <label htmlFor="remember-me" className="ml-2 text-[14px] text-[#6B7280]">
-                Keep me signed in for 30 days
-              </label>
-            </div>
-
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading}
-              className="w-full h-10 mt-2 flex items-center justify-center rounded-lg bg-[#4F46E5] text-white text-[14px] font-medium hover:bg-[#4338CA] focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:ring-offset-2 transition-colors disabled:opacity-60"
+              disabled={loginMutation.isPending}
+              className="w-full h-11 mt-4 flex items-center justify-center rounded bg-[#0088CC] hover:bg-[#0099EE] text-white text-xs font-mono font-bold tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(0,136,204,0.3)] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? (
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+              {loginMutation.isPending ? (
+                <div className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>AUTHENTICATING...</span>
+                </div>
               ) : (
-                'Sign in'
+                'SIGN IN TO CONSOLE →'
               )}
             </button>
           </form>
         </div>
 
-        {/* Footer Links */}
-        <p className="mt-6 text-center text-[14px] text-[#6B7280]">
-          Don't have an account?{' '}
-          <a href="#register" className="font-medium text-[#4F46E5] hover:underline focus:outline-none focus:underline">
-            Start a free trial
-          </a>
+        {/* Footer Link */}
+        <p className="mt-6 text-center text-xs font-mono text-slate-500">
+          NEED AN ACCOUNT?{' '}
+          <Link to="/register" className="font-semibold text-[#0088CC] hover:underline hover:text-[#0099EE] transition-colors">
+            START FREE TRIAL
+          </Link>
         </p>
 
-        {/* Trust Badge */}
-        <div className="mt-8 flex items-center justify-center gap-2 text-[12px] text-[#9CA3AF]">
-          <svg className="w-3.5 h-3.5 text-[#10B981]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-          </svg>
-          <span>256-bit SSL Encrypted • Enterprise Uptime SLA</span>
+        {/* Security Badge */}
+        <div className="mt-8 flex items-center justify-center gap-2 text-[11px] font-mono text-slate-500">
+          <span className="w-2 h-2 rounded-full bg-[#00E599] shadow-[0_0_8px_#00E599]"></span>
+          <span>TLS 1.3 ENCRYPTED SESSION</span>
         </div>
 
       </div>
