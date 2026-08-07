@@ -10,11 +10,10 @@ export interface AuthenticatedRequest extends Request {
 }
 
 export const authenticate = (
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
-  // 1. Get token from cookies or Authorization header
   const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
 
   if (!token) {
@@ -24,16 +23,29 @@ export const authenticate = (
     });
   }
 
-  try {
-    // 2. Verify token
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET as string
-    ) as JwtPayload;
+  if (!process.env.JWT_SECRET) {
+    // Fail loudly in your own code rather than letting jwt.verify throw
+    // an opaque error when the secret is missing.
+    console.error("JWT_SECRET is not set");
+    return res.status(500).json({
+      success: false,
+      message: "Server configuration error.",
+    });
+  }
 
-    // 3. Attach userId to the custom request property
-    (req as AuthenticatedRequest).userId = decoded.sub;
-    
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
+
+    if (!decoded.sub) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token payload.",
+      });
+    }
+
+    // 3. Attach userId to the request
+    req.userId = decoded.sub;
+
     next();
   } catch (err) {
     return res.status(401).json({

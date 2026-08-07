@@ -1,12 +1,14 @@
 // src/routes/index.ts
 import { Router } from "express";
 import authRouter from "../modules/auth/auth.router.ts";
-import monitorsRoute from "../modules/monitors/monitors.route.ts";
+import AddUrlRoute from "../modules/monitors/route.ts"
 
 const router = Router();
 
 
 router.use("/auth", authRouter);
-router.use("/monitor",monitorsRoute);
+router.use("/addUrl",AddUrlRoute)
+
+
 
 export default router;

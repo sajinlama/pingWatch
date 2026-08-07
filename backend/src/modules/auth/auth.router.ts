@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { userLogin, UserRegister, userLogout } from "./authController.js";
-import { authenticate } from "../../middleware/auth.middleware.js"; // 👈 Import the middleware function, not the interface
-
+import { authenticate } from "../../middleware/auth.middleware.js"; 
 const router = Router();
 
 // Public routes (no authentication middleware needed)
@@ -16,4 +15,4 @@ router.get("/me", authenticate, (req, res) => {
   });
 });
 
-export default router;1
+export default router;
