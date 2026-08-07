@@ -1,43 +1,24 @@
-// src/queues/monitor.queue.ts
-import { Queue } from "bullmq";
+import { Queue, Worker, Job } from "bullmq";
 import { connection } from "../config/redis.js";
 
-export const monitorQueue = new Queue("monitor-pings", {
-  connection,
-});
 
-interface SchedulePingInput {
+export interface CheckJobData {
   monitorId: string;
-  url: string;
-  checkIntervalSeconds: number;
 }
 
 
-export const scheduleMonitorCheck = async ({
-  monitorId,
-  url,
-  checkIntervalSeconds,
-}: SchedulePingInput) => {
-  const intervalInMs = checkIntervalSeconds * 1000;
-
-  await monitorQueue.add(
-    "ping-check-job", 
-    { monitorId, url }, 
-    {
-      jobId: `repeat:${monitorId}`, 
-      repeat: {
-        every: intervalInMs, 
-      },
-    }
-  );
-};
+export const MONITOR_QUEUE_NAME = "monitor-check";
 
 
-export const removeMonitorCheck = async (monitorId: string) => {
-  const repeatableJobs = await monitorQueue.getRepeatableJobs();
-  const job = repeatableJobs.find((j) => j.id === `repeat:${monitorId}`);
-
-  if (job) {
-    await monitorQueue.removeRepeatableByKey(job.key);
-  }
-};
+export const monitorQueue = new Queue<CheckJobData>(MONITOR_QUEUE_NAME, {
+  connection,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: "exponential",
+      delay: 5000,
+    },
+    removeOnComplete: { count: 1000, age: 3600 },
+    removeOnFail: { age: 86400 },
+  },
+});

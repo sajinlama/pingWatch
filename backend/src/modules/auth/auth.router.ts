@@ -9,7 +9,9 @@ router.post("/login", userLogin);
 router.post("/logout", userLogout);
 
 router.get("/me", authenticate, (req, res) => {
-  return res.status(200).json({
+  console.log("hello sajin ")
+console.log("Cookies received:", req.cookies);  
+return res.status(200).json({
     success: true,
     message: "Authenticated user accessed profile",
   });

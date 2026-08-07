@@ -4,8 +4,8 @@
 -- =========================================================
 
 -- Extensions
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";  -- for gen_random_uuid()
-CREATE EXTENSION IF NOT EXISTS "citext";    -- for case-insensitive email
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";   -- for gen_random_uuid()
+CREATE EXTENSION IF NOT EXISTS "citext";    -- for case-insensitive ema4444il
 
 -- =========================================================
 -- ENUM TYPES
@@ -28,11 +28,7 @@ CREATE TABLE users (
     updated_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- =========================================================
--- TELEGRAM LINK CODES
--- Short-lived, single-use codes used to link a Telegram chat
--- to a user account via /start <code> in the bot
--- =========================================================
+
 CREATE TABLE telegram_link_codes (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,

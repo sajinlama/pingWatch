@@ -2,14 +2,15 @@ import { Request, Response } from "express";
 import { registerSchema, loginSchema } from "./auth.validation.js";
 import { AppError, loginUser, registerUser } from "./authService.js";
 
+const isProduction = process.env.NODE_ENV === "production";
 
-const DEV_COOKIE_OPTIONS = {
-  httpOnly: true, 
-  secure: false, 
-  sameSite: "lax" as const, 
-  maxAge: 24 * 60 * 60 * 1000,
-  
-};
+// Unified Cookie Configuration
+export const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? ("strict" as const) : ("lax" as const),
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+} as const;
 
 // ── Register ────────────────────────────────────────────────
 export const UserRegister = async (req: Request, res: Response) => {
@@ -26,7 +27,7 @@ export const UserRegister = async (req: Request, res: Response) => {
   try {
     const { user, token } = await registerUser(parsedData.data);
 
-    res.cookie("token", token, DEV_COOKIE_OPTIONS);
+    res.cookie("token", token, COOKIE_OPTIONS);
 
     return res.status(201).json({
       success: true,
@@ -64,8 +65,7 @@ export const userLogin = async (req: Request, res: Response) => {
   try {
     const { user, token } = await loginUser(parsedData.data);
 
-    // Set auth cookie on login
-    res.cookie("token", token, DEV_COOKIE_OPTIONS);
+    res.cookie("token", token, COOKIE_OPTIONS);
 
     return res.status(200).json({
       success: true,
@@ -88,8 +88,14 @@ export const userLogin = async (req: Request, res: Response) => {
   }
 };
 
+// ── Logout ──────────────────────────────────────────────────
 export const userLogout = async (_req: Request, res: Response) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: COOKIE_OPTIONS.httpOnly,
+    sameSite: COOKIE_OPTIONS.sameSite,
+    secure: COOKIE_OPTIONS.secure,
+  });
+
   return res.status(200).json({
     success: true,
     message: "Logged out successfully",

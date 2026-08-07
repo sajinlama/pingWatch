@@ -2,15 +2,15 @@ import axios from "axios";
 
 export interface PingInput {
   url: string;
-  timeoutSeconds?: number; 
+  timeoutSeconds?: number;
 }
 
 export interface PingResult {
   status: "UP" | "DOWN";
   httpStatus: number | null;
   responseTime: number;
+  errorMessage: string | null;
 }
-
 
 export const pingUrl = async ({
   url,
@@ -19,7 +19,6 @@ export const pingUrl = async ({
   const startTime = Date.now();
 
   try {
-   
     const response = await axios({
       method: "HEAD",
       url,
@@ -27,29 +26,29 @@ export const pingUrl = async ({
       headers: {
         "User-Agent": "UptimeBot/1.0",
       },
-      
-      validateStatus: () => true, 
+      // Do not throw on 4xx/5xx status codes so we can record httpStatus accurately
+      validateStatus: () => true,
     });
 
     const responseTime = Date.now() - startTime;
-    console.log(responseTime);
-
-    
     const isUp = response.status >= 200 && response.status < 400;
 
     return {
       status: isUp ? "UP" : "DOWN",
       httpStatus: response.status,
       responseTime,
+      errorMessage: isUp ? null : `HTTP Status Code ${response.status}`,
     };
   } catch (error) {
     const responseTime = Date.now() - startTime;
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error during check";
 
-    
     return {
       status: "DOWN",
-      httpStatus: null, 
+      httpStatus: null,
       responseTime,
+      errorMessage,
     };
   }
 };
