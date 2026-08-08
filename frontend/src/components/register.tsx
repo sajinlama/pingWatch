@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { useNavigate, Link } from 'react-router-dom';
 import { apiBaseUrl } from '../env';
-import { Link } from 'react-router';
 
 interface SendData {
   name: string;
@@ -9,11 +9,12 @@ interface SendData {
   password: string;
 }
 
+// Define registerUser here (or import it from a separate api/auth file)
 const registerUser = async (credentials: SendData) => {
   const response = await fetch(`${apiBaseUrl}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: "include",
+    credentials: 'include',
     body: JSON.stringify(credentials),
   });
 
@@ -26,6 +27,7 @@ const registerUser = async (credentials: SendData) => {
 };
 
 export default function Register() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<SendData>({ name: '', email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
 
@@ -33,6 +35,7 @@ export default function Register() {
     mutationFn: registerUser,
     onSuccess: (data) => {
       console.log('Registration successful:', data);
+      navigate('/telegram-connect');
     },
     onError: (error: Error) => {
       console.error('Registration error:', error.message);
