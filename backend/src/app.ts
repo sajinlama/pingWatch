@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import routes from "./routes/index.ts"
 
+
 const app: Express = express();
 
 app.use(express.json());
@@ -18,7 +19,7 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
-    credentials: true, 
+    credentials: true,
   })
 );
 
@@ -28,6 +29,8 @@ app.get("/health", (_req: Request, res: Response) => {
 
 
 app.use("/api/v1", routes);
+console.log("hello sajin this is before ")
+
 
 
 app.use((_req: Request, res: Response) => {
@@ -35,7 +38,7 @@ app.use((_req: Request, res: Response) => {
     success: false,
     message: "Route not found",
   });
-}); 
+});
 
 
 

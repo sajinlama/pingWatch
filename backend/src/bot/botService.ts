@@ -1,8 +1,12 @@
 import { randomBytes } from "crypto"
 import { pool } from "../config/db"
 
-export const createTelegramLinkCode = async (userId: string) => {
-  const code = randomBytes(4).toString("hex") // e.g. "a1b2c3d4"
+export const generateCode = (): string => {
+  return randomBytes(4).toString("hex")
+}
+
+export const createTelegramLinkCode = async (userId: string): Promise<string> => {
+  const code = generateCode()
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 min
 
   await pool.query(
@@ -12,4 +16,12 @@ export const createTelegramLinkCode = async (userId: string) => {
   )
 
   return code
+}
+
+export const getTelegramLinkStatus = async (userId: string): Promise<boolean> => {
+  const { rows } = await pool.query(
+    `SELECT telegram_chat_id FROM users WHERE id = $1`,
+    [userId]
+  )
+  return !!rows[0]?.telegram_chat_id
 }

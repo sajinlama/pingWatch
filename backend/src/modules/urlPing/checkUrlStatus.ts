@@ -30,7 +30,7 @@ const checkUrlStatus = async (req: AuthenticatedRequest, res: Response) => {
     }
 
     // Queue job with job name "check-url" or default
-    await monitorQueue.add("check-url", { monitorId: id });
+    await monitorQueue.add("check-url", { monitorId: id as string});
 
     return res.status(202).json({
       success: true,

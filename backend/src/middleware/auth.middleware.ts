@@ -14,9 +14,10 @@ export const authenticate = (
   res: Response,
   next: NextFunction
 ) => {
-  console.log("hello sajin this is cookie")
+
   const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
-  console.log(token,"token")
+ 
+  
 
   if (!token) {
     return res.status(401).json({

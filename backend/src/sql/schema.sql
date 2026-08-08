@@ -66,7 +66,7 @@ CREATE TABLE monitors (
     created_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    CONSTRAINT uq_user_url UNIQUE (user_id, url)   -- no duplicate URLs per user
+    CONSTRAINT uq_user_url UNIQUE (user_id, url)  
 );
 
 CREATE INDEX idx_monitors_user_id       ON monitors(user_id);

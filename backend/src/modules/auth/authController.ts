@@ -28,7 +28,6 @@ export const UserRegister = async (req: Request, res: Response) => {
     const { user, token } = await registerUser(parsedData.data);
 
     res.cookie("token", token, COOKIE_OPTIONS);
-
     return res.status(201).json({
       success: true,
       message: "User registered successfully",
