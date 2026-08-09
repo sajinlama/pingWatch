@@ -1,17 +1,11 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
- 
   LayoutDashboard,
-  Send,
+  PlusCircle,
   Bell,
- 
-  ShieldCheck,
+  Settings,
   ExternalLink,
-
-  ChevronRight,
-  Server,
-  Zap,
 } from "lucide-react";
 
 import {
@@ -26,6 +20,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuBadge,
+  SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
 
@@ -33,40 +28,42 @@ export function AppSidebar() {
   const location = useLocation();
   const { setOpenMobile } = useSidebar();
 
-  // Primary Navigation Configuration
-  const mainNavItems = [
+  const navItems = [
     {
-      title: "CONSOLE DASHBOARD",
+      title: "ADD MONITOR",
+      path: "/add-monitor",
+      icon: PlusCircle,
+      badge: "NEW",
+      badgeColor: "bg-[#0088CC]/20 border-[#0088CC]/40 text-[#0088CC]",
+    },
+    {
+      title: "DASHBOARD",
       path: "/dashboard",
       icon: LayoutDashboard,
       badge: "LIVE",
       badgeColor: "bg-[#00E599]/10 border-[#00E599]/30 text-[#00E599]",
     },
     {
-      title: "TELEGRAM BOT",
+      title: "NOTIFICATION",
       path: "/telegram-connect",
-      icon: Send,
-      badge: "ACTIVE",
-      badgeColor: "bg-[#0088CC]/20 border-[#0088CC]/40 text-[#0088CC]",
+      icon: Bell,
+    },
+    {
+      title: "SETTINGS",
+      path: "/settings",
+      icon: Settings,
     },
   ];
 
-  // Secondary Telemetry & Settings Config
-  const telemetryNavItems = [
-    { title: "ENDPOINTS SENTINEL", path: "/dashboard?tab=endpoints", icon: Server },
-    { title: "ALERT RULES", path: "/dashboard?tab=alerts", icon: Bell },
-    { title: "DISPATCH LOGS", path: "/dashboard?tab=logs", icon: Zap },
-    { title: "SECURITY & TOKENS", path: "/dashboard?tab=security", icon: ShieldCheck },
-  ];
-
   const handleNavClick = () => {
-    // Close sidebar automatically on mobile screens upon item click
     setOpenMobile(false);
   };
 
   return (
-    <Sidebar className="border-r border-[#22252B] bg-[#0B0C10] font-mono text-[#D8E0E8]">
-      
+    <Sidebar 
+      collapsible="icon" 
+      className="border-r border-[#22252B] bg-[#0B0C10] font-mono text-[#D8E0E8]"
+    >
       {/* 1. Header: Brand Logo */}
       <SidebarHeader className="border-b border-[#22252B] p-4 bg-[#0B0C10]">
         <NavLink to="/dashboard" className="flex items-center gap-3 group">
@@ -81,7 +78,7 @@ export function AppSidebar() {
             </span>
           </div>
 
-          <div className="flex flex-col truncate">
+          <div className="flex flex-col truncate group-data-[collapsible=icon]:hidden">
             <span className="font-bold text-sm tracking-wider text-white leading-none">
               BISARIC<span className="text-[#0088CC]">WATCH</span>
             </span>
@@ -92,17 +89,15 @@ export function AppSidebar() {
         </NavLink>
       </SidebarHeader>
 
-      {/* 2. Main Navigation Content */}
+      {/* 2. Navigation Content */}
       <SidebarContent className="bg-[#0B0C10] px-2 py-3 space-y-4">
-        
-        {/* Navigation Group 1: Core Controls */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-[10px] font-bold text-slate-500 tracking-widest uppercase mb-1">
-            01 // CORE PLATFORM
+            01 // NAVIGATION
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
-              {mainNavItems.map((item) => {
+              {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 const Icon = item.icon;
 
@@ -110,6 +105,7 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton
                       isActive={isActive}
+                      tooltip={item.title}
                       className={`w-full h-10 px-3 rounded text-xs font-mono tracking-wide transition-all ${
                         isActive
                           ? "bg-[#181B1F] text-white border border-[#0088CC]/40 shadow-[0_0_12px_rgba(0,136,204,0.15)]"
@@ -118,11 +114,11 @@ export function AppSidebar() {
                       onClick={handleNavClick}
                     >
                       <NavLink to={item.path} className="flex items-center gap-3 w-full">
-                        <Icon className={`w-4 h-4 ${isActive ? "text-[#0088CC]" : "text-slate-400"}`} />
-                        <span className="flex-1 truncate">{item.title}</span>
+                        <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-[#0088CC]" : "text-slate-400"}`} />
+                        <span className="flex-1 truncate group-data-[collapsible=icon]:hidden">{item.title}</span>
                         {item.badge && (
                           <SidebarMenuBadge
-                            className={`px-1.5 py-0.5 border text-[9px] font-bold rounded ${item.badgeColor}`}
+                            className={`px-1.5 py-0.5 border text-[9px] font-bold rounded group-data-[collapsible=icon]:hidden ${item.badgeColor}`}
                           >
                             {item.badge}
                           </SidebarMenuBadge>
@@ -136,37 +132,8 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Navigation Group 2: Monitoring Views */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] font-bold text-slate-500 tracking-widest uppercase mb-1">
-            02 // MONITORING & LOGS
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              {telemetryNavItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                    
-                      className="w-full h-9 px-3 text-xs font-mono text-slate-400 hover:text-white hover:bg-[#181B1F]/60 rounded transition-colors"
-                      onClick={handleNavClick}
-                    >
-                      <NavLink to={item.path} className="flex items-center gap-3">
-                        <Icon className="w-4 h-4 text-slate-500" />
-                        <span className="flex-1 truncate">{item.title}</span>
-                        <ChevronRight className="w-3 h-3 text-slate-600" />
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Live Status Widget Box */}
-        <div className="px-3 pt-2">
+        {/* Active Status Widget Box (Auto-hidden on icon collapse) */}
+        <div className="px-3 pt-2 group-data-[collapsible=icon]:hidden">
           <div className="p-3 bg-[#181B1F] border border-[#22252B] rounded-lg space-y-2">
             <div className="flex items-center justify-between text-[10px] text-slate-400">
               <span className="flex items-center gap-1.5">
@@ -183,17 +150,16 @@ export function AppSidebar() {
             </span>
           </div>
         </div>
-
       </SidebarContent>
 
-      {/* 3. Footer: User Status & Quick Link */}
+      {/* 3. Footer */}
       <SidebarFooter className="border-t border-[#22252B] p-3 bg-[#0B0C10]">
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2 overflow-hidden">
             <div className="w-7 h-7 rounded bg-[#181B1F] border border-[#22252B] flex items-center justify-center text-[#0088CC] font-bold text-xs flex-shrink-0">
               OP
             </div>
-            <div className="flex flex-col truncate">
+            <div className="flex flex-col truncate group-data-[collapsible=icon]:hidden">
               <span className="text-white text-xs font-bold truncate">OPERATOR</span>
               <span className="text-[10px] text-slate-500 truncate">ONLINE</span>
             </div>
@@ -201,7 +167,7 @@ export function AppSidebar() {
 
           <NavLink
             to="/"
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-[#181B1F] rounded transition-colors"
+            className="p-1.5 text-slate-400 hover:text-white hover:bg-[#181B1F] rounded transition-colors group-data-[collapsible=icon]:hidden"
             title="Landing Page"
           >
             <ExternalLink className="w-4 h-4" />
@@ -209,6 +175,8 @@ export function AppSidebar() {
         </div>
       </SidebarFooter>
 
+      {/* Hover / Drag edge rail to expand or collapse */}
+      <SidebarRail />
     </Sidebar>
   );
 }

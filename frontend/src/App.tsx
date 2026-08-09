@@ -1,15 +1,18 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+
 import Layout from "./components/layout";
 import Home from "./components/home";
 import Login from "./components/login";
 import Register from "./components/register";
 import Dashboard from "./components/dashboard";
 import TelegramConnect from "./components/telegramConnect";
+import AddMonitor from "./components/addmonitor";
+import Settings from "./components/settings";
 import { ProtectedRoute } from "./components/protectedRoute";
 
-function App() {
+export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
@@ -19,13 +22,13 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Protected routes */}
+          {/* Protected routes using ProtectedRoute layout component */}
           <Route element={<ProtectedRoute />}>
-          <Route path="telegram-connect" element={<TelegramConnect />} />
-            <Route path="/dashboard" element={<Layout />}>
-              <Route index element={<Dashboard />} />
-              {/* <Route path="/monitor" element={<Dashboard />} /> */}
-              
+          <Route path="/telegram-connect" element={<TelegramConnect />} />
+            <Route element={<Layout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/add-monitor" element={<AddMonitor />} />
+              <Route path="/settings" element={<Settings />} />
             </Route>
           </Route>
         </Routes>
@@ -33,5 +36,3 @@ function App() {
     </AuthProvider>
   );
 }
-
-export default App;
