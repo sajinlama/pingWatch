@@ -29,7 +29,6 @@ app.get("/health", (_req: Request, res: Response) => {
 
 
 app.use("/api/v1", routes);
-console.log("hello sajin this is before ")
 
 
 

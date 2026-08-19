@@ -45,7 +45,7 @@ export function AppSidebar() {
     },
     {
       title: "NOTIFICATION",
-      path: "/telegram-connect",
+      path: "/notification",
       icon: Bell,
     },
     {
@@ -62,7 +62,7 @@ export function AppSidebar() {
   return (
     <Sidebar 
       collapsible="icon" 
-      className="border-r border-[#22252B] bg-[#0B0C10] font-mono text-[#D8E0E8]"
+      className="border-r border-[#22252B] bg-[#0B0C10] font-mono text-[#D8E0E8] relative"
     >
       {/* 1. Header: Brand Logo */}
       <SidebarHeader className="border-b border-[#22252B] p-4 bg-[#0B0C10]">

@@ -11,6 +11,7 @@ import TelegramConnect from "./components/telegramConnect";
 import AddMonitor from "./components/addmonitor";
 import Settings from "./components/settings";
 import { ProtectedRoute } from "./components/protectedRoute";
+import Notification from "./components/Notification";
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/add-monitor" element={<AddMonitor />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path = "/notification" element={<Notification/>}/>
             </Route>
           </Route>
         </Routes>
