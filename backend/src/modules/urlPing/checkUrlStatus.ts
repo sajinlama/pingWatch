@@ -6,13 +6,13 @@ import { monitorQueue } from "../../jobs/queue.monitor";
 
 
 const checkUrlStatus = async (req: AuthenticatedRequest, res: Response) => {
-  const { id } = req.params;
+const { id } = req.params;
   const userId = req.userId;
 
   if (!userId) {
     return res.status(401).json({
       success: false,
-      message: "Access denied. No token provided.",
+      message: "moniter id not found denied. No token provided.",
     });
   }
 
@@ -29,7 +29,6 @@ const checkUrlStatus = async (req: AuthenticatedRequest, res: Response) => {
       });
     }
 
-    // Queue job with job name "check-url" or default
     await monitorQueue.add("check-url", { monitorId: id as string});
 
     return res.status(202).json({

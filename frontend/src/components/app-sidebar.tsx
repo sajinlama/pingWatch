@@ -3,6 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   PlusCircle,
+  Play,
   Bell,
   Settings,
   ExternalLink,
@@ -35,6 +36,13 @@ export function AppSidebar() {
       icon: PlusCircle,
       badge: "NEW",
       badgeColor: "bg-[#0088CC]/20 border-[#0088CC]/40 text-[#0088CC]",
+    },
+    {
+      title: "START MONITOR",
+      path: "/start-monitoring",
+      icon: Play,
+      badge: "RUN",
+      badgeColor: "bg-[#00E599]/20 border-[#00E599]/40 text-[#00E599]",
     },
     {
       title: "DASHBOARD",
@@ -132,7 +140,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Active Status Widget Box (Auto-hidden on icon collapse) */}
+        {/* Active Status Widget Box */}
         <div className="px-3 pt-2 group-data-[collapsible=icon]:hidden">
           <div className="p-3 bg-[#181B1F] border border-[#22252B] rounded-lg space-y-2">
             <div className="flex items-center justify-between text-[10px] text-slate-400">
@@ -175,7 +183,7 @@ export function AppSidebar() {
         </div>
       </SidebarFooter>
 
-      {/* Hover / Drag edge rail to expand or collapse */}
+      {/* Hover / Drag edge rail */}
       <SidebarRail />
     </Sidebar>
   );

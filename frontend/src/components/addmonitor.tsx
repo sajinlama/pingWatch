@@ -45,45 +45,13 @@ export default function AddMonitor() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0C10] font-sans text-[#D8E0E8] flex flex-col justify-between antialiased selection:bg-[#0088CC]/20 selection:text-[#0088CC] relative">
+    <div className="max-h-screen bg-[#0B0C10] font-sans text-[#D8E0E8] flex flex-col justify-between antialiased selection:bg-[#0088CC]/20 selection:text-[#0088CC] relative">
       
       {/* Background Grid & Glow Accents */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1F232D15_1px,transparent_1px),linear-gradient(to_bottom,#1F232D15_1px,transparent_1px)] bg-[size:3rem_3rem] pointer-events-none -z-10" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[280px] bg-gradient-to-b from-[#0088CC]/15 via-[#0088CC]/5 to-transparent blur-[110px] pointer-events-none -z-10 rounded-full" />
 
-      {/* Navigation Header */}
-      <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[#0B0C10]/90 border-b border-[#22252B]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className="relative w-9 h-9 bg-[#181B1F] border border-[#22252B] rounded-lg flex items-center justify-center text-[#0088CC] shadow-[0_0_15px_rgba(0,136,204,0.25)] group-hover:border-[#0088CC]/60 transition-all">
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2L3 6V12C3 17.52 6.84 22.74 12 24C17.16 22.74 21 17.52 21 12V6L12 2Z" fill="#181B1F" stroke="#0088CC" strokeWidth="2" strokeLinejoin="round"/>
-                  <path d="M7 12H10L12 8L14 16L16 12H17" stroke="#00E599" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E599] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00E599]"></span>
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-base tracking-wider text-white font-mono leading-none">
-                  BISARIC<span className="text-[#0088CC]">WATCH</span>
-                </span>
-                <span className="text-[10px] font-mono text-slate-500 tracking-widest mt-0.5 uppercase">Endpoint Uptime Sentinel</span>
-              </div>
-            </Link>
-
-            <Link
-              to="/dashboard"
-              className="h-9 px-4 text-xs font-mono font-medium text-slate-300 hover:text-white hover:bg-[#181B1F] border border-[#22252B] rounded flex items-center justify-center transition-all uppercase"
-            >
-              ← Dashboard
-            </Link>
-          </div>
-        </div>
-      </nav>
-
+    
       {/* Main Content Area */}
       <main className="relative max-w-2xl w-full mx-auto px-4 py-12 sm:py-16">
         
