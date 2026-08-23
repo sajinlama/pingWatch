@@ -91,20 +91,27 @@ CREATE TABLE monitor_logs (
 CREATE INDEX idx_monitor_logs_monitor_checked
     ON monitor_logs(monitor_id, checked_at DESC);
 
+-- =========================================================
+-- NOTIFICATIONS
+-- =========================================================
+CREATE TABLE notifications (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    monitor_id  UUID NOT NULL REFERENCES monitors(id) ON DELETE CASCADE,
 
-    CREATE TABLE notifications (
-        id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        monitor_id  UUID NOT NULL REFERENCES monitors(id) ON DELETE CASCADE,
+    type        notification_type NOT NULL,
+    message     TEXT NOT NULL,
 
-        type        notification_type NOT NULL,
-        message     TEXT NOT NULL,
+    sent_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 
-        sent_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
+-- Fast lookup for a user's notification history across all monitors
+CREATE INDEX idx_notifications_user_sent
+    ON notifications(user_id, sent_at DESC);
 
+-- Fast lookup for notifications tied to a specific monitor
 CREATE INDEX idx_notifications_monitor_sent
     ON notifications(monitor_id, sent_at DESC);
-
 
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$

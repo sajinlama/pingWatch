@@ -85,6 +85,7 @@ export const notifyMonitorStatusChange = async ({
   );
 
   const monitor = rows[0];
+  console.log(monitor)
   if (!monitor) {
     console.error(`[Notification] Monitor ${monitorId} not found, skipping`);
     return;
