@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router';
 import { useMutation } from '@tanstack/react-query';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
-const BOT_USERNAME = 'BisaricWatchBot';
+const BOT_USERNAME = 'Ping_Notification';
 const POLL_INTERVAL_MS = 3000;
 
 interface GetCodeResponse {
