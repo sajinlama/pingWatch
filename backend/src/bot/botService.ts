@@ -7,7 +7,7 @@ export const generateCode = (): string => {
 
 export const createTelegramLinkCode = async (userId: string): Promise<string> => {
   const code = generateCode()
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 min
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000) 
 
   await pool.query(
     `INSERT INTO telegram_link_codes (user_id, code, expires_at)

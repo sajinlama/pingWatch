@@ -1,63 +1,70 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
+import { useMutation } from '@tanstack/react-query';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 const BOT_USERNAME = 'BisaricWatchBot';
 const POLL_INTERVAL_MS = 3000;
 
-type LoadState = 'loading' | 'ready' | 'error';
+interface GetCodeResponse {
+  success: boolean;
+  code?: string;
+  message?: string;
+}
 
 export default function TelegramConnect() {
-  const [loadState, setLoadState] = useState<LoadState>('loading');
+  const navigate = useNavigate();
   const [code, setCode] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const command = code ? `/start ${code}` : '';
-
-  // Fetch a fresh code on mount
-  useEffect(() => {
-    fetchCode();
-    return () => stopPolling();
-  }, []);
-
-  // Once we have a code and aren't connected yet, poll for status
-  useEffect(() => {
-    if (code && !isConnected) {
-      startPolling();
-    }
-    return () => stopPolling();
-  }, [code, isConnected]);
-
-  const fetchCode = async () => {
-    setLoadState('loading');
-    setErrorMsg('');
-    try {
+  // TanStack Query Mutation for fetching / generating the link code
+  const {
+    mutate: generateCode,
+    isPending: isGeneratingCode,
+    isError: isCodeError,
+    error: codeError,
+  } = useMutation({
+    mutationFn: async (): Promise<GetCodeResponse> => {
       const res = await fetch(`${API_BASE}/tel/getCode`, {
         method: 'GET',
-        credentials: 'include', // sends auth cookie
+        credentials: 'include',
       });
 
       if (!res.ok) {
         throw new Error(`Server responded ${res.status}`);
       }
 
-      const data = await res.json();
-
+      const data: GetCodeResponse = await res.json();
       if (!data.success || !data.code) {
         throw new Error(data.message || 'No code returned');
       }
 
-      setCode(data.code);
-      setLoadState('ready');
-    } catch (err) {
-      console.error('Failed to fetch link code:', err);
-      setErrorMsg('Could not generate a code. Please try again.');
-      setLoadState('error');
+      return data;
+    },
+    onSuccess: (data) => {
+      if (data.code) {
+        setCode(data.code);
+      }
+    },
+  });
+
+  const command = code ? `/start ${code}` : '';
+
+  // Trigger code generation on mount
+  useEffect(() => {
+    generateCode();
+    return () => stopPolling();
+  }, [generateCode]);
+
+  // Polling for connection status
+  useEffect(() => {
+    if (code && !isConnected) {
+      startPolling();
     }
-  };
+    return () => stopPolling();
+  }, [code, isConnected]);
 
   const checkStatus = async () => {
     try {
@@ -66,22 +73,26 @@ export default function TelegramConnect() {
         credentials: 'include',
       });
 
-      if (!res.ok) return; // silently retry on next poll tick
+      if (!res.ok) return;
 
       const data = await res.json();
 
       if (data.success && data.connected) {
         setIsConnected(true);
         stopPolling();
+
+        // Brief delay so user sees the success state before redirecting
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1200);
       }
     } catch (err) {
       console.error('Status check failed:', err);
-      // don't surface transient poll errors to the user
     }
   };
 
   const startPolling = () => {
-    stopPolling(); // avoid duplicate intervals
+    stopPolling();
     pollRef.current = setInterval(checkStatus, POLL_INTERVAL_MS);
   };
 
@@ -101,14 +112,12 @@ export default function TelegramConnect() {
 
   return (
     <div className="min-h-screen bg-[#0B0C10] font-sans text-[#D8E0E8] flex flex-col justify-center items-center px-4 py-12 antialiased selection:bg-[#0088CC]/20 selection:text-[#0088CC] relative overflow-hidden">
-
       {/* Background Grid Accent & Blue Glow */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1F232D15_1px,transparent_1px),linear-gradient(to_bottom,#1F232D15_1px,transparent_1px)] bg-[size:3rem_3rem] pointer-events-none -z-10" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-b from-[#0088CC]/15 via-[#0088CC]/5 to-transparent blur-[120px] pointer-events-none -z-10 rounded-full" />
 
       {/* Container */}
       <div className="w-full max-w-[440px] relative z-10">
-
         {/* Brand Header */}
         <div className="flex flex-col items-center mb-8">
           <Link to="/" className="flex items-center gap-3 group mb-4">
@@ -130,7 +139,6 @@ export default function TelegramConnect() {
 
         {/* Card */}
         <div className="bg-[#181B1F] border border-[#22252B] rounded-xl shadow-[0_16px_40px_rgba(0,0,0,0.6)] p-6 sm:p-8 font-mono">
-
           {/* Header */}
           <div className="flex items-center gap-3 mb-6 pb-5 border-b border-[#22252B]">
             <div className="w-10 h-10 rounded-lg bg-[#0088CC]/10 border border-[#0088CC]/30 flex items-center justify-center text-[#0088CC] shadow-[0_0_12px_rgba(0,136,204,0.2)]">
@@ -145,11 +153,11 @@ export default function TelegramConnect() {
           </div>
 
           {/* Error state */}
-          {loadState === 'error' && (
+          {isCodeError && (
             <div className="mb-6 p-3.5 bg-red-500/10 border border-red-500/30 rounded-lg text-xs text-red-300">
-              {errorMsg}
+              {codeError instanceof Error ? codeError.message : 'Could not generate a code. Please try again.'}
               <button
-                onClick={fetchCode}
+                onClick={() => generateCode()}
                 className="ml-2 underline font-bold hover:text-red-200"
               >
                 Retry
@@ -158,16 +166,15 @@ export default function TelegramConnect() {
           )}
 
           {/* Loading state */}
-          {loadState === 'loading' && (
+          {isGeneratingCode && (
             <div className="mb-6 p-3.5 bg-[#0B0C10] border border-[#22252B] rounded-lg text-xs text-slate-400 animate-pulse">
               Generating your link code…
             </div>
           )}
 
           {/* Steps */}
-          {loadState === 'ready' && (
+          {!isGeneratingCode && !isCodeError && code && (
             <div className="space-y-4 mb-6 text-xs">
-
               {/* Step 1 */}
               <div className="p-3.5 bg-[#0B0C10] border border-[#22252B] rounded-lg text-slate-300">
                 <span className="font-bold text-[#0088CC] uppercase tracking-wider block mb-1">01 // BOT SEARCH</span>
@@ -195,13 +202,12 @@ export default function TelegramConnect() {
               {/* Step 3 */}
               <div className="p-3.5 bg-[#0B0C10] border border-[#22252B] rounded-lg text-slate-300">
                 <span className="font-bold text-[#0088CC] uppercase tracking-wider block mb-1">03 // AWAIT CONFIRMATION</span>
-                We'll detect the link automatically — no need to refresh.
+                We'll detect the link automatically — redirecting upon connection.
               </div>
-
             </div>
           )}
 
-          {/* Status Button (non-interactive — reflects real state) */}
+          {/* Status Button */}
           <div
             className={`w-full h-11 flex items-center justify-center rounded text-xs font-mono font-bold tracking-wider uppercase transition-all shadow-md ${
               isConnected
@@ -210,8 +216,8 @@ export default function TelegramConnect() {
             }`}
           >
             {isConnected
-              ? '✓ TELEGRAM DISPATCHER CONNECTED'
-              : loadState === 'ready'
+              ? '✓ CONNECTED — REDIRECTING TO DASHBOARD…'
+              : code
               ? 'WAITING FOR TELEGRAM CONFIRMATION…'
               : 'STANDBY'}
           </div>
@@ -222,7 +228,6 @@ export default function TelegramConnect() {
           <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-[#00E599] shadow-[0_0_8px_#00E599]' : 'bg-slate-600'}`}></span>
           <span>{isConnected ? 'BOT WEBHOOK PROTOCOL ACTIVE' : 'AWAITING LINK'}</span>
         </div>
-
       </div>
     </div>
   );

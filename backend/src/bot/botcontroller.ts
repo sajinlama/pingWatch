@@ -24,7 +24,8 @@ export const GetCode = async (req: AuthenticatedRequest, res: Response) => {
 export const getConnectionStatus = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.userId!
-    const connected = await getTelegramLinkStatus(userId)
+    const connected = await getTelegramLinkStatus(userId);
+    console.log(connected,"this is connected")
 
     return res.status(200).json({
       success: true,

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { apiBaseUrl } from '../env';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router'; 
 
 const loginUser = async (credentials: { email: string; password: string }) => {
   const response = await fetch(`${apiBaseUrl}/auth/login`, {
@@ -24,10 +24,13 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  const navigate = useNavigate(); // 2. Initialize navigate
+
   const loginMutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
       console.log('Login successful:', data);
+      navigate('/dashboard', { replace: true });
     },
     onError: (error: Error) => {
       console.error('Login error:', error.message);
@@ -41,7 +44,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-[#0B0C10] font-sans text-[#D8E0E8] flex flex-col justify-center items-center px-4 py-12 antialiased selection:bg-[#0088CC]/20 selection:text-[#0088CC] relative overflow-hidden">
-      
       {/* Background Grid Accent & Blue Glow */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1F232D15_1px,transparent_1px),linear-gradient(to_bottom,#1F232D15_1px,transparent_1px)] bg-[size:3rem_3rem] pointer-events-none -z-10" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-b from-[#0088CC]/15 via-[#0088CC]/5 to-transparent blur-[120px] pointer-events-none -z-10 rounded-full" />

@@ -2,11 +2,12 @@ import { Response } from "express";
 import { AuthenticatedRequest } from "../../middleware/auth.middleware";
 import { pool } from "../../config/db";
 import { monitorQueue } from "../../jobs/queue.monitor";
+import { check, string } from "zod";
 
 
 
 const checkUrlStatus = async (req: AuthenticatedRequest, res: Response) => {
-const { id } = req.params;
+  const { id } = req.params;
   const userId = req.userId;
 
   if (!userId) {
@@ -18,7 +19,7 @@ const { id } = req.params;
 
   try {
     const { rows } = await pool.query(
-      `SELECT id FROM monitors WHERE id = $1 AND user_id = $2`,
+      `SELECT id , check_interval_seconds FROM monitors WHERE id = $1 AND user_id = $2`,
       [id, userId]
     );
 
@@ -29,7 +30,22 @@ const { id } = req.params;
       });
     }
 
-    await monitorQueue.add("check-url", { monitorId: id as string});
+    const checkInterval = rows[0].check_interval_seconds;
+    console.log(checkInterval)
+
+      await monitorQueue.upsertJobScheduler(
+        `monitor-${id}`,
+        {
+          every: checkInterval * 1000,
+        },
+        {
+          name: "check-url",
+          data: {
+          
+              monitorId: id as string,
+          },
+        }
+      );
 
     return res.status(202).json({
       success: true,

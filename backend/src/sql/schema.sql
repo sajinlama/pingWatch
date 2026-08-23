@@ -92,15 +92,15 @@ CREATE INDEX idx_monitor_logs_monitor_checked
     ON monitor_logs(monitor_id, checked_at DESC);
 
 
-CREATE TABLE notifications (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    monitor_id  UUID NOT NULL REFERENCES monitors(id) ON DELETE CASCADE,
+    CREATE TABLE notifications (
+        id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        monitor_id  UUID NOT NULL REFERENCES monitors(id) ON DELETE CASCADE,
 
-    type        notification_type NOT NULL,
-    message     TEXT NOT NULL,
+        type        notification_type NOT NULL,
+        message     TEXT NOT NULL,
 
-    sent_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
+        sent_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
 
 CREATE INDEX idx_notifications_monitor_sent
     ON notifications(monitor_id, sent_at DESC);
