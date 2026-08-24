@@ -52,11 +52,10 @@ PingWatch is an automated website and API uptime monitoring system with backgrou
 pingWatch/
 ├── docker-compose.yml
 ├── package.json
-├── src/
-│   └── sql/
-│       └── schema.sql
 ├── backend/
 │   ├── src/
+│   │   └── sql/
+│   │       └── schema.sql
 │   ├── package.json
 │   └── .env
 └── frontend/
@@ -83,7 +82,7 @@ Make sure the following are installed on your machine before you begin:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/pingWatch.git
+git clone https://github.com/sajinlama/pingWatch.git
 cd pingWatch
 ```
 
@@ -123,7 +122,7 @@ docker compose ps
 ### 5. Run the Database Schema
 
 ```bash
-docker exec -i pingwatch_postgres psql -U postgres -d pingwatch_db < src/sql/schema.sql
+docker exec -i pingwatch_postgres psql -U postgres -d pingwatch_db < backend/src/sql/schema.sql
 ```
 
 Verify tables were created:
