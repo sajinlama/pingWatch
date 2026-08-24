@@ -51,6 +51,7 @@ async function sendTelegram(monitor: MonitorWithUser, message: string): Promise<
   if (!monitor.telegram_chat_id) return false;
   try {
     await telBot.api.sendMessage(Number(monitor.telegram_chat_id), message);
+    console.log("the message is sent"); 
     return true;
   } catch (err) {
     console.error(`[Notification] Failed to Telegram ${monitor.telegram_chat_id}:`, err);
@@ -58,11 +59,20 @@ async function sendTelegram(monitor: MonitorWithUser, message: string): Promise<
   }
 }
 
-async function recordNotification(monitorId: string, message: string): Promise<void> {
-  await pool.query(
-    `INSERT INTO notifications (monitor_id, type, message) VALUES ($1, 'TELEGRAM', $2)`,
-    [monitorId, message]
-  );
+async function recordNotification(
+  monitorId: string,
+  userId: string,
+  message: string
+): Promise<void> {
+  try {
+    const data = await pool.query(
+      `INSERT INTO notifications (monitor_id, user_id, type, message) VALUES ($1, $2, 'TELEGRAM', $3)`,
+      [monitorId, userId, message]
+    );
+    console.log(data.rows, "this is data inserted in notification");
+  } catch (err) {
+    console.error(`[Notification] Failed to record notification for monitor ${monitorId}:`, err);
+  }
 }
 
 export const notifyMonitorStatusChange = async ({
@@ -85,7 +95,7 @@ export const notifyMonitorStatusChange = async ({
   );
 
   const monitor = rows[0];
-  console.log(monitor)
+  console.log(monitor, "this is monitor of the notification")
   if (!monitor) {
     console.error(`[Notification] Monitor ${monitorId} not found, skipping`);
     return;
@@ -107,6 +117,6 @@ export const notifyMonitorStatusChange = async ({
 
   const message = buildMessage(monitor, newStatus, errorMessage);
 
-  const sent = await sendTelegram(monitor, message);
-  if (sent) await recordNotification(monitorId, message);
+ const sent = await sendTelegram(monitor, message);
+if (sent) await recordNotification(monitorId, monitor.user_id, message);
 };

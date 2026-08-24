@@ -22,7 +22,7 @@ const userNotificationlist = async (userid: UserId) => {
         `,
         [userid.id]
     )
-    console.log(data);
+    console.log(data.rows, " this is notification data ");
     return data.rows
 }
 

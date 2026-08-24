@@ -7,13 +7,17 @@ const addMonitorUrl = async (req: AuthenticatedRequest, res: Response) => {
   const parsed = createMonitorSchema.safeParse(req.body);
 
   if (!parsed.success) {
+    const flatErrors = parsed.error.flatten();
+
     return res.status(400).json({
       message: "Validation failed",
-      errors: parsed.error.flatten().fieldErrors,
+      errors: {
+        ...flatErrors.fieldErrors,
+        ...(flatErrors.formErrors.length > 0 ? { root: flatErrors.formErrors } : {}),
+      },
     });
   }
 
-  // Set by the authenticate middleware — route must be behind it.
   const userId = req.userId;
 
   if (!userId) {
@@ -35,7 +39,6 @@ const addMonitorUrl = async (req: AuthenticatedRequest, res: Response) => {
   } catch (error) {
     console.error(error);
 
-    // Postgres unique_violation → the uq_user_url constraint fired
     if ((error as { code?: string }).code === "23505") {
       return res.status(409).json({
         message: "You already have a monitor for this URL",

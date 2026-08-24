@@ -31,15 +31,10 @@ const performCheck = async (job: Job<CheckJobData>) => {
 
   const pingResult = await pingUrl({
     url: monitor.url,
-    timeoutSeconds: monitor.timeout_seconds,
+    timeoutSeconds: monitor.timeout_seconds || 30,
   });
 
-  await pool.query(
-    `INSERT INTO monitor_logs (monitor_id, status, http_status, response_time, error_message)
-     VALUES ($1, $2, $3, $4, $5)`,
-    [monitorId, pingResult.status, pingResult.httpStatus, pingResult.responseTime, pingResult.errorMessage]
-  );
-
+  // Always keep the current state fresh
   await pool.query(
     `UPDATE monitors
      SET status = $1, http_status = $2, response_time = $3, last_checked = NOW()
@@ -48,26 +43,58 @@ const performCheck = async (job: Job<CheckJobData>) => {
   );
 
   const previousStatus = monitor.status;
+
+  // Only touch monitor_logs when status changes
   if (previousStatus !== pingResult.status) {
     console.log(
       `[Alert Trigger] Monitor ${monitorId} flipped from ${previousStatus} to ${pingResult.status}`
     );
-    await notificationQueue.add("send-notification", {
-      monitorId,
-      previousStatus,
-      newStatus: pingResult.status,
-    } satisfies NotificationJobData);
+
+    await pool.query(
+      `INSERT INTO monitor_logs (monitor_id, status, http_status, response_time, error_message)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [monitorId, pingResult.status, pingResult.httpStatus, pingResult.responseTime, pingResult.errorMessage]
+    );
+
+    await notificationQueue.add(
+      "send-notification",
+      {
+        monitorId,
+        previousStatus,
+        newStatus: pingResult.status,
+      } satisfies NotificationJobData,
+      {
+        removeOnComplete: 100, // Prune old completed jobs to keep Redis lean
+        removeOnFail: 50,
+      }
+    );
   }
 };
 
-export const monitorCheckWorker = new Worker<CheckJobData>(MONITOR_QUEUE_NAME, performCheck, {
-  connection,
-});
+// --- MONITOR CHECK WORKER ---
+export const monitorCheckWorker = new Worker<CheckJobData>(
+  MONITOR_QUEUE_NAME,
+  performCheck,
+  {
+    connection,
+    concurrency: 15,          // Number of parallel checks to process
+    lockDuration: 60000,      // 60s lock window (gives HTTP timeouts ample headroom)
+    lockRenewTime: 20000,     // Renew lock every 20s
+    maxStalledCount: 1,       // Prevent endless zombie retries if worker restarts
+    removeOnComplete: { count: 100 },
+    removeOnFail: { count: 50 },
+  }
+);
 
 monitorCheckWorker.on("failed", (job, err) => {
-  console.error(`Check failed for monitor ${job?.data.monitorId}:`, err);
+  console.error(`[Worker] Check failed for monitor ${job?.data.monitorId}:`, err.message);
 });
 
+monitorCheckWorker.on("error", (err) => {
+  console.error(`[Worker Error - Monitor Queue]:`, err.message);
+});
+
+// --- NOTIFICATION DISPATCHER ---
 const sendNotification = async (job: Job<NotificationJobData>) => {
   const { monitorId, previousStatus, newStatus } = job.data;
   await notifyMonitorStatusChange({ monitorId, previousStatus, newStatus });
@@ -76,9 +103,21 @@ const sendNotification = async (job: Job<NotificationJobData>) => {
 export const notificationWorker = new Worker<NotificationJobData>(
   NOTIFICATION_QUEUE_NAME,
   sendNotification,
-  { connection }
+  {
+    connection,
+    concurrency: 5,
+    lockDuration: 30000,
+    lockRenewTime: 10000,
+    maxStalledCount: 1,
+    removeOnComplete: { count: 100 },
+    removeOnFail: { count: 50 },
+  }
 );
 
 notificationWorker.on("failed", (job, err) => {
-  console.error(`Notification failed for monitor ${job?.data.monitorId}:`, err);
+  console.error(`[Worker] Notification failed for monitor ${job?.data.monitorId}:`, err.message);
+});
+
+notificationWorker.on("error", (err) => {
+  console.error(`[Worker Error - Notification Queue]:`, err.message);
 });

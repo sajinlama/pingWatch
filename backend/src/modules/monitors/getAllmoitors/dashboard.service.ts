@@ -15,8 +15,9 @@ const URLStatus = async (userid: { id: string }) => {
         `,
         [userid.id]
     );
-
     return data.rows;
 };
 
 export  default URLStatus;
+
+

@@ -1,7 +1,6 @@
 import { AuthenticatedRequest } from "../../../middleware/auth.middleware";
 import { Request, Response } from "express";
 import getAllUrl from "./service";
-import { tryCatch } from "bullmq";
 import URLStatus from "./dashboard.service";
 
 const getUrl = async (req: AuthenticatedRequest, res: Response): Promise<void> => {

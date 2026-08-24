@@ -29,7 +29,7 @@ export const pingUrl = async ({
     responseTime: 0,
     errorMessage: "No attempts made",
   };
-
+  
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     const startTime = Date.now();
 
