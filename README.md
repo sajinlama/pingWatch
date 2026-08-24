@@ -20,7 +20,6 @@ PingWatch is an automated website and API uptime monitoring system with backgrou
 - [Environment Variables Reference](#-environment-variables-reference)
 - [Security Notes](#-security-notes)
 - [Contributing](#-contributing)
-- [License](#-license)
 
 ---
 
@@ -94,7 +93,6 @@ Create a `backend/.env` file:
 
 ```env
 PORT=5000
-NODE_ENV=development
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/pingwatch_db
 REDIS_URL=redis://localhost:6379
 JWT_SECRET=your_super_secret_sentinel_key_32_chars
@@ -194,16 +192,18 @@ npm run dev
 
 ## 🔌 API Endpoints
 
-| Method | Endpoint                              | Description             |
-|--------|----------------------------------------|--------------------------|
-| POST   | `/api/auth/register`                   | Register user            |
-| POST   | `/api/auth/login`                      | Login                    |
-| POST   | `/api/auth/logout`                     | Logout                   |
-| GET    | `/api/addUrl/GetAllURLStauts`          | Get URL statuses         |
-| GET    | `/api/addUrl/getMonitorsList`          | Get monitors             |
-| POST   | `/api/addUrl/createMonitor`            | Create monitor           |
-| POST   | `/api/pingUrl/check-Status/:id`        | Check monitor status     |
-| GET    | `/api/notification/getNotificationList`| Get notifications        |
+> Base API path: `http://localhost:5000/api/v1`
+
+| Method | Endpoint                                  | Description             |
+|--------|---------------------------------------------|--------------------------|
+| POST   | `/api/v1/auth/register`                      | Register user            |
+| POST   | `/api/v1/auth/login`                         | Login                    |
+| POST   | `/api/v1/auth/logout`                        | Logout                   |
+| GET    | `/api/v1/addUrl/GetAllURLStauts`             | Get URL statuses         |
+| GET    | `/api/v1/addUrl/getMonitorsList`             | Get monitors             |
+| POST   | `/api/v1/addUrl/createMonitor`               | Create monitor           |
+| POST   | `/api/v1/pingUrl/check-Status/:id`           | Check monitor status     |
+| GET    | `/api/v1/notification/getNotificationList`   | Get notifications        |
 
 ---
 
@@ -235,7 +235,6 @@ docker compose down -v
 | Variable              | Description                                      | Example                                              |
 |-----------------------|---------------------------------------------------|-------------------------------------------------------|
 | `PORT`                | Port the backend server listens on                 | `5000`                                                 |
-| `NODE_ENV`            | Application environment                            | `development`                                          |
 | `DATABASE_URL`        | PostgreSQL connection string                       | `postgresql://postgres:postgres@localhost:5432/pingwatch_db` |
 | `REDIS_URL`           | Redis connection string                            | `redis://localhost:6379`                               |
 | `JWT_SECRET`          | Secret key used to sign JWTs                        | `your_super_secret_sentinel_key_32_chars`              |
@@ -268,12 +267,6 @@ Contributions are welcome! To contribute:
 3. Commit your changes (`git commit -m "Add your feature"`)
 4. Push to the branch (`git push origin feature/your-feature`)
 5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
 
 ---
 
