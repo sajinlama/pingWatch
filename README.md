@@ -1,67 +1,282 @@
+# 🛡️ PingWatch — Endpoint Uptime Sentinel
 
-An automated, high-frequency website and API uptime monitoring system. Features periodic probe execution runners, live telemetry metrics, dark terminal UI, and instant multi-channel incident dispatches (Telegram, Email, Webhooks).
+**Monitor. Detect. Notify.**
+
+PingWatch is an automated website and API uptime monitoring system with background health checks, live status monitoring, and instant notifications through Telegram, Email, and Webhooks.
+
+---
+
+## 📚 Table of Contents
+
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [Prerequisites](#-prerequisites)
+- [Setup](#-setup)
+- [Running the Application](#️-running-the-application)
+- [URLs](#-urls)
+- [API Endpoints](#-api-endpoints)
+- [Useful Docker Commands](#-useful-docker-commands)
+- [Environment Variables Reference](#-environment-variables-reference)
+- [Security Notes](#-security-notes)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+---
+
+## ✨ Features
+
+- 🔍 Automated background health checks for websites and APIs
+- 📊 Live status dashboard with real-time monitor updates
+- 🔔 Instant notifications via **Telegram**, **Email**, and **Webhooks**
+- ⏱️ Configurable check intervals powered by a BullMQ job queue
+- 🔐 JWT-based authentication
+- 🐳 Fully containerized local development with Docker Compose
 
 ---
 
 ## ⚡ Tech Stack
 
-- **Frontend:** React 18, Vite, Tailwind CSS, TanStack Query v5, Lucide Icons, Shadcn/ui
-- **Backend:** Node.js, Express, TypeScript, Zod, JWT Authentication
-- **Database & Storage:** PostgreSQL 16, Redis 7 (BullMQ Queues & State Locks)
-- **Background Engine:** BullMQ Worker Pipelines with auto-lock renewal
+| Layer               | Technology                                         |
+|---------------------|-----------------------------------------------------|
+| Frontend            | React 18, Vite, Tailwind CSS, TanStack Query, Shadcn/ui |
+| Backend             | Node.js, Express, TypeScript, Zod, JWT              |
+| Database            | PostgreSQL 16                                        |
+| Cache & Queue       | Redis 7, BullMQ                                      |
+| Background Worker   | BullMQ Worker                                        |
 
 ---
 
-## 📁 Repository Structure
+## 📁 Project Structure
 
-pingWatch/├── docker-compose.yml       # PostgreSQL (pingwatch_postgres) & Redis (pingwatch_redis)├── package.json             # Root monorepo orchestration scripts├── src/│   └── sql/│       └── schema.sql       # Database table definitions & constraints├── backend/                 # Express API & background BullMQ probe workers│   ├── src/│   ├── package.json│   └── .env└── frontend/                # React dashboard & UI sentinel console├── src/├── package.json└── .env
+```text
+pingWatch/
+├── docker-compose.yml
+├── package.json
+├── src/
+│   └── sql/
+│       └── schema.sql
+├── backend/
+│   ├── src/
+│   ├── package.json
+│   └── .env
+└── frontend/
+    ├── src/
+    ├── package.json
+    └── .env
+```
+
 ---
 
-## 🚀 Quick Setup & Installation
+## ✅ Prerequisites
 
-### 1. Clone the Repository
+Make sure the following are installed on your machine before you begin:
+
+- [Node.js](https://nodejs.org/) v18+
+- [npm](https://www.npmjs.com/)
+- [Docker](https://www.docker.com/) & Docker Compose
+- [Git](https://git-scm.com/)
+
+---
+
+## 🚀 Setup
+
+### 1. Clone the repository
+
 ```bash
-git clone [https://github.com/your-username/pingWatch.git](https://github.com/your-username/pingWatch.git)
+git clone https://github.com/your-username/pingWatch.git
 cd pingWatch
-2. Configure Environment VariablesBackend (backend/.env)Code snippetPORT=5000
+```
+
+### 2. Backend Environment
+
+Create a `backend/.env` file:
+
+```env
+PORT=5000
 NODE_ENV=development
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/pingwatch_db
 REDIS_URL=redis://localhost:6379
 JWT_SECRET=your_super_secret_sentinel_key_32_chars
 CLIENT_URL=http://localhost:5173
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-Frontend (frontend/.env)Code snippetVITE_API_BASE_URL=http://localhost:5000/api
-3. Start Database & Cache ContainersSpin up PostgreSQL and Redis in the background:Bashdocker compose up -d
-Verify that both containers are running and healthy:Bashdocker compose ps
-4. Initialize Database Schema with docker execRun your database schema (src/sql/schema.sql) directly inside the running PostgreSQL container:Bashdocker exec -i pingwatch_postgres psql -U postgres -d pingwatch_db < src/sql/schema.sql
-Windows PowerShell alternative:Bashdocker cp src/sql/schema.sql pingwatch_postgres:/tmp/schema.sql
-docker exec -it pingwatch_postgres psql -U postgres -d pingwatch_db -f /tmp/schema.sql
-Verify Tables Created:Bashdocker exec -it pingwatch_postgres psql -U postgres -d pingwatch_db -c "\dt"
-5. Install DependenciesBash# Install root orchestration packages
+```
+
+### 3. Frontend Environment
+
+Create a `frontend/.env` file:
+
+```env
+VITE_API_BASE_URL=http://localhost:5000/api
+```
+
+### 4. Start PostgreSQL & Redis
+
+```bash
+docker compose up -d
+```
+
+Check that containers are running:
+
+```bash
+docker compose ps
+```
+
+### 5. Run the Database Schema
+
+```bash
+docker exec -i pingwatch_postgres psql -U postgres -d pingwatch_db < src/sql/schema.sql
+```
+
+Verify tables were created:
+
+```bash
+docker exec -it pingwatch_postgres psql -U postgres -d pingwatch_db -c "\dt"
+```
+
+### 6. Install Dependencies
+
+```bash
 npm install
 
-# Install backend and frontend dependencies
-cd backend && npm install
-cd ../frontend && npm install
+cd backend
+npm install
+
+cd ../frontend
+npm install
+
 cd ..
-🛠️ Running the ApplicationOption A: Run All Services Together (Recommended)From the project root:Bashnpm run dev
-Option B: Run Services in Separate TerminalsTerminal 1: Backend APIBashcd backend
+```
+
+---
+
+## 🛠️ Running the Application
+
+### Option 1 — Run Everything
+
+```bash
 npm run dev
-Terminal 2: BullMQ Probe WorkerBashcd backend
+```
+
+### Option 2 — Run Separately
+
+**Backend:**
+
+```bash
+cd backend
+npm run dev
+```
+
+**Worker:**
+
+```bash
+cd backend
 npm run worker
-Terminal 3: Frontend DashboardBashcd frontend
+```
+
+**Frontend:**
+
+```bash
+cd frontend
 npm run dev
-Frontend Console: http://localhost:5173Backend API Base: http://localhost:5000/api🔌 API Endpoints ReferenceMethodEndpointDescriptionPOST/api/auth/registerRegister new operator accountPOST/api/auth/loginAuthenticate and issue HTTP cookie/JWTPOST/api/auth/logoutTerminate session and clear cookiesGET/api/addUrl/GetAllURLStautsFetch live HTTP status and latencies for all targetsGET/api/addUrl/getMonitorsList configured endpointsPOST/api/addUrl/createMonitorRegister a new target domain or URLPOST/api/pingUrl/check-Status/:idTrigger an immediate manual probe executionGET/api/notification/getNotificationListFetch alert dispatch stream & webhook logs🛑 Useful Docker CommandsBash# View live container logs
+```
+
+---
+
+## 🌐 URLs
+
+| Service      | URL                              |
+|--------------|-----------------------------------|
+| Frontend     | http://localhost:5173             |
+| Backend API  | http://localhost:5000/api         |
+
+---
+
+## 🔌 API Endpoints
+
+| Method | Endpoint                              | Description             |
+|--------|----------------------------------------|--------------------------|
+| POST   | `/api/auth/register`                   | Register user            |
+| POST   | `/api/auth/login`                      | Login                    |
+| POST   | `/api/auth/logout`                     | Logout                   |
+| GET    | `/api/addUrl/GetAllURLStauts`          | Get URL statuses         |
+| GET    | `/api/addUrl/getMonitorsList`          | Get monitors             |
+| POST   | `/api/addUrl/createMonitor`            | Create monitor           |
+| POST   | `/api/pingUrl/check-Status/:id`        | Check monitor status     |
+| GET    | `/api/notification/getNotificationList`| Get notifications        |
+
+---
+
+## 🐳 Useful Docker Commands
+
+```bash
+# View logs
 docker compose logs -f
 
-# Enter interactive PostgreSQL shell
+# PostgreSQL shell
 docker exec -it pingwatch_postgres psql -U postgres -d pingwatch_db
 
-# Enter interactive Redis CLI
+# Redis CLI
 docker exec -it pingwatch_redis redis-cli
 
-# Stop containers without losing data
+# Stop containers
 docker compose down
 
-# Stop containers and wipe volume data (Factory Reset)
+# Stop containers and delete data
 docker compose down -v
+```
+
+---
+
+## 🔧 Environment Variables Reference
+
+### Backend (`backend/.env`)
+
+| Variable              | Description                                      | Example                                              |
+|-----------------------|---------------------------------------------------|-------------------------------------------------------|
+| `PORT`                | Port the backend server listens on                 | `5000`                                                 |
+| `NODE_ENV`            | Application environment                            | `development`                                          |
+| `DATABASE_URL`        | PostgreSQL connection string                       | `postgresql://postgres:postgres@localhost:5432/pingwatch_db` |
+| `REDIS_URL`           | Redis connection string                            | `redis://localhost:6379`                               |
+| `JWT_SECRET`          | Secret key used to sign JWTs                        | `your_super_secret_sentinel_key_32_chars`              |
+| `CLIENT_URL`          | URL of the frontend (used for CORS)                 | `http://localhost:5173`                                |
+| `TELEGRAM_BOT_TOKEN`  | Bot token used to send Telegram notifications       | `your_telegram_bot_token`                              |
+
+### Frontend (`frontend/.env`)
+
+| Variable              | Description                       | Example                          |
+|-----------------------|-------------------------------------|-------------------------------------|
+| `VITE_API_BASE_URL`   | Base URL the frontend uses to reach the backend API | `http://localhost:5000/api` |
+
+---
+
+## 🔐 Security Notes
+
+- Do **not** commit `.env` files to version control.
+- Never expose your `JWT_SECRET`, database password, or `TELEGRAM_BOT_TOKEN` publicly.
+- Add `.env` to `.gitignore` in both `backend/` and `frontend/`.
+- Use strong, unique secrets in production and rotate them periodically.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! To contribute:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m "Add your feature"`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+<p align="center">
+  <strong>PINGWATCH — Monitor. Detect. Notify.</strong>
+</p>
