@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   PlusCircle,
@@ -7,6 +7,8 @@ import {
   Bell,
   Settings,
   ExternalLink,
+  LogOut,
+  RefreshCw,
 } from "lucide-react";
 
 import {
@@ -24,12 +26,57 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { apiBaseUrl } from "@/env";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+const logoutUser = async () => {
+  const response = await fetch(`${apiBaseUrl}/auth/logout`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to log out");
+  }
+
+  return response.json();
+};
 
 export function AppSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { setOpenMobile } = useSidebar();
 
+  const logoutMutation = useMutation({
+    mutationFn: logoutUser,
+    onSuccess: () => {
+      // Clear cached queries and redirect to login
+      queryClient.clear();
+      console.log("logout")
+      navigate("/login");
+    },
+    onError: (err: Error) => {
+      console.error("Logout failed:", err.message);
+      navigate("/login");
+    },
+  });
+
+  const handleLogout = (e: React.MouseEvent) => {
+    e.preventDefault();
+    logoutMutation.mutate();
+  };
+
   const navItems = [
+    {
+      title: "DASHBOARD",
+      path: "/dashboard",
+      icon: LayoutDashboard,
+      badge: "LIVE",
+      badgeColor: "bg-[#00E599]/10 border-[#00E599]/30 text-[#00E599]",
+    },
     {
       title: "ADD MONITOR",
       path: "/add-monitor",
@@ -45,22 +92,10 @@ export function AppSidebar() {
       badgeColor: "bg-[#00E599]/20 border-[#00E599]/40 text-[#00E599]",
     },
     {
-      title: "DASHBOARD",
-      path: "/dashboard",
-      icon: LayoutDashboard,
-      badge: "LIVE",
-      badgeColor: "bg-[#00E599]/10 border-[#00E599]/30 text-[#00E599]",
-    },
-    {
       title: "NOTIFICATION",
       path: "/notification",
       icon: Bell,
-    },
-    {
-      title: "SETTINGS",
-      path: "/settings",
-      icon: Settings,
-    },
+    }
   ];
 
   const handleNavClick = () => {
@@ -160,8 +195,8 @@ export function AppSidebar() {
         </div>
       </SidebarContent>
 
-      {/* 3. Footer */}
-      <SidebarFooter className="border-t border-[#22252B] p-3 bg-[#0B0C10]">
+      {/* 3. Footer with Operator Info & Logout Actions */}
+      <SidebarFooter className="border-t border-[#22252B] p-3 bg-[#0B0C10] space-y-2">
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2 overflow-hidden">
             <div className="w-7 h-7 rounded bg-[#181B1F] border border-[#22252B] flex items-center justify-center text-[#0088CC] font-bold text-xs flex-shrink-0">
@@ -181,6 +216,23 @@ export function AppSidebar() {
             <ExternalLink className="w-4 h-4" />
           </NavLink>
         </div>
+
+        {/* Terminate Session / Logout Button */}
+        <button
+          onClick={handleLogout}
+          disabled={logoutMutation.isPending}
+          className="w-full h-8 px-2.5 bg-[#181B1F] hover:bg-[#F2495C]/15 border border-[#22252B] hover:border-[#F2495C]/40 text-slate-400 hover:text-[#F2495C] rounded text-[11px] font-mono flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+          title="Sign Out"
+        >
+          {logoutMutation.isPending ? (
+            <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#F2495C]" />
+          ) : (
+            <LogOut className="w-3.5 h-3.5 flex-shrink-0" />
+          )}
+          <span className="truncate group-data-[collapsible=icon]:hidden">
+            {logoutMutation.isPending ? "EXITING..." : "LOGOUT"}
+          </span>
+        </button>
       </SidebarFooter>
 
       {/* Hover / Drag edge rail */}

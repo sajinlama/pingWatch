@@ -2,3 +2,40 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+@layer utilities {
+  /* Smooth Momentum Scrolling */
+  html, body, .custom-scrollbar {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* WebKit (Chrome, Edge, Safari) */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #0B0C10;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #1F232D;
+    border-radius: 9999px;
+    border: 1px solid #22252B;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #0088CC;
+    box-shadow: 0 0 10px rgba(0, 136, 204, 0.4);
+  }
+
+  /* Firefox Support */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #1F232D #0B0C10;
+  }
+}

@@ -9,7 +9,6 @@ import Register from "./components/register";
 import Dashboard from "./components/dashboard";
 import TelegramConnect from "./components/telegramConnect";
 import AddMonitor from "./components/addmonitor";
-import Settings from "./components/settings";
 import { ProtectedRoute } from "./components/protectedRoute";
 import Notification from "./components/Notification";
 import StartMonitoring from "./components/StartMonitoring";
@@ -30,7 +29,6 @@ export default function App() {
             <Route element={<Layout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/add-monitor" element={<AddMonitor />} />
-              <Route path="/settings" element={<Settings />} />
               <Route path = "/notification" element={<Notification/>}/>
               <Route path="/start-monitoring" element ={<StartMonitoring/>}/>
             </Route>

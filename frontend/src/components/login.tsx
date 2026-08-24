@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiBaseUrl } from '../env';
-import { Link, useNavigate } from 'react-router'; 
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const loginUser = async (credentials: { email: string; password: string }) => {
   const response = await fetch(`${apiBaseUrl}/auth/login`, {
@@ -24,12 +25,33 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const navigate = useNavigate(); // 2. Initialize navigate
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const auth = useAuth() as any;
 
   const loginMutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
       console.log('Login successful:', data);
+
+      // Extract user from payload
+      const user = data?.data?.user || data?.user || data?.data;
+
+      // 1. Synchronize AuthContext state
+      if (typeof auth?.setUser === 'function') {
+        auth.setUser(user);
+      }
+      if (typeof auth?.setIsAuthenticated === 'function') {
+        auth.setIsAuthenticated(true);
+      }
+      if (typeof auth?.login === 'function') {
+        auth.login(user);
+      }
+
+      // 2. Invalidate potential cached user query
+      queryClient.invalidateQueries({ queryKey: ['authUser'] });
+
+      // 3. Navigate directly to dashboard
       navigate('/dashboard', { replace: true });
     },
     onError: (error: Error) => {
