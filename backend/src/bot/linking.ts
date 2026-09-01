@@ -39,11 +39,6 @@ export const linkingToUsers = () => {
         return
       }
 
-      if (new Date(linkCode.expires_at) < new Date()) {
-        await ctx.reply("That code has expired. Please generate a new one.")
-        await client.query("ROLLBACK")
-        return
-      }
 
       await client.query(
         `UPDATE users SET telegram_chat_id = $1 WHERE id = $2`,

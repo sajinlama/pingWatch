@@ -1,22 +1,23 @@
-import { randomBytes } from "crypto"
-import { pool } from "../config/db"
+import { pool } from "../config/db";
 
-export const generateCode = (): string => {
-  return randomBytes(4).toString("hex")
-}
+const query = `
+  SELECT code
+  FROM telegram_link_codes
+  WHERE user_id = $1
+  ORDER BY created_at DESC
+  LIMIT 1
+`;
 
-export const createTelegramLinkCode = async (userId: string): Promise<string> => {
-  const code = generateCode()
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000) 
+export const getCode = async (userId: string): Promise<string | null> => {
+  const result = await pool.query(query, [userId]);
 
-  await pool.query(
-    `INSERT INTO telegram_link_codes (user_id, code, expires_at)
-     VALUES ($1, $2, $3)`,
-    [userId, code, expiresAt]
-  )
+  if (result.rows.length === 0) {
+    return null;
+  }
 
-  return code
-}
+  return result.rows[0].code;
+};
+
 
 export const getTelegramLinkStatus = async (userId: string): Promise<boolean> => {
   const { rows } = await pool.query(

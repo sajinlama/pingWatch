@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { registerSchema, loginSchema } from "./auth.validation.js";
 import { AppError, loginUser, registerUser } from "./authService.js";
+import { createTelegramLinkCode } from "./telegramService.js";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -27,12 +28,17 @@ export const UserRegister = async (req: Request, res: Response) => {
   try {
     const { user, token } = await registerUser(parsedData.data);
 
+        const result = createTelegramLinkCode(user.id);
+
+
     res.cookie("token", token, COOKIE_OPTIONS);
     return res.status(201).json({
       success: true,
       message: "User registered successfully",
       data: { user },
     });
+
+    
   } catch (error) {
     if (error instanceof AppError) {
       return res.status(error.statusCode).json({

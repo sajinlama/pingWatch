@@ -1,11 +1,11 @@
 import { Response } from "express"
 import { AuthenticatedRequest } from "../middleware/auth.middleware"
-import { createTelegramLinkCode, getTelegramLinkStatus } from "./botService"
+import { getCode, getTelegramLinkStatus } from "./botService"
 
 export const GetCode = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.userId!
-    const code = await createTelegramLinkCode(userId)
+    const code = await getCode(userId)
 
     return res.status(200).json({
       success: true,

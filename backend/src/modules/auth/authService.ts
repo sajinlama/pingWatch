@@ -21,6 +21,8 @@ interface UserRow {
   created_at: Date;
 }
 
+
+
 const signToken = (userId: string) => {
   if (!JWT_SECRET) {
     throw new AppError(500, "JWT_SECRET is not configured on the server");
